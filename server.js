@@ -1,7 +1,8 @@
-import express, { application } from "express"
+import express from "express"
 import { Server } from "socket.io"
 import handlebars from "express-handlebars"
 import viewsRouter from "./src/routes/views.router.js"
+import socketCb from "./src/routes/socket.router.js"
 import __dirname from "./utils.js"
 
 
@@ -31,25 +32,7 @@ server.use("/", viewsRouter)
 // server side
 // configuracion de websocket
 
-socketServer.on('connection', (socket) => {     
-    console.log('socket connected', socket.id);  
-
-    // estoy escuchando un mensaje del cliente
-    socket.on("message", (data)=>{
-        console.log(data)
-
-    })
-
-    // emit individual
-    socket.emit("message-individual", "este mensaje lo debe recibir el socket que lo emitio")
-
-    // emit a todos los clientes menos el que emite
-    socket.broadcast.emit("message-broadcast", "este mensaje lo deben recibir todos los sockets menos el que lo emitio")
-
-    // emit a todos los clientes conectados
-    socketServer.emit("message-all", "este mensaje lo deben recibir todos los sockets conectados")
-
-})
+socketServer.on("connection", socketCb);
 
 export {socketServer}
 

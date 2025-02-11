@@ -1,15 +1,55 @@
+// cliente de socket
+
 const socket = io()
 
-socket.emit("message", "hola desde el cliente")
+let user
+let chatBox = document.getElementById("chatBox")
 
-socket.on("message-individual", (data)=>{
-    console.log(data)
+swal.fire({
+    title: "Identificate",
+    input: "text",
+    text:"ingresa un usuario",
+    inputValidator: (value) => {
+        return !value && "debes ingresar un usuario"
+    },
+    allowOutsideClick: false,
+}).then(result =>{
+    user = result.value
+    socket.emit('authenticated', user)
+
 })
 
-socket.on("message-broadcast", (data)=>{
-    console.log(data)
+chatBox.addEventListener("keyup", event =>{
+    if(event.key === "Enter"){
+        if(chatBox.value.trim().length > 0){
+            socket.emit("message", {user: user, message: chatBox.value})
+            chatBox.value = ""
+        }
+    }
 })
 
-socket.on("message-all", (data)=>{
-    console.log(data)
-})                                                                                                                                             
+socket.on("messageLogs", data =>{
+    let log = document.getElementById("messageLogs");
+    let messages = ""
+    data.forEach(message =>{
+        messages =
+          messages + `${message.user} dice: ${message.message}</br>`;
+        log.innerHTML = messages
+    }
+    )
+})
+
+socket.on("newUserConnected", user =>{
+    swal.fire({
+        icon: "success",
+        title: "Nuevo usuario conectado",
+        text: user,
+        timer: 5000,
+        showConfirmButton: false,
+        icon: 'info'    
+    }
+)}
+)
+
+
+
